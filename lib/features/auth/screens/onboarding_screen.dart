@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     'image': 'assets/secure.png',
   },
   {
-    'title': 'Edge + Cloud Hybrid Control',
+    'title': 'Cloud Hybrid Control',
     'description': 'Hybrid execution model where time-critical controls run locally on ESP32 while AI inference and planning run on GPU-backed cloud or laptop server.',
     'image': 'assets/cloud.png',
   },
@@ -76,14 +76,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         children: [
           // Blue wave background at the top
           Positioned(
-            top: 0, left: 0, right: 0, height: size.height * 0.7, // Increased blue area
+            top: 0, left: 0, right: 0, height: size.height * 0.6, // Increased blue area
             child: CustomPaint(painter: HeaderWavePainter()),
           ),
           
           // Stationary White Sheet at the bottom
           Positioned(
             bottom: 0, left: 0, right: 0,
-            height: size.height * 0.35, // Covers bottom 42%
+            height: size.height * 0.4, // Covers bottom 42%
             child: Container(
               decoration: const BoxDecoration(
                 color: Color(0xFFF8FAFC),

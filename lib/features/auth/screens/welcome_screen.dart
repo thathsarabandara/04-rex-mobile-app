@@ -45,15 +45,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                     animation: _animController,
                     delay: 0.2,
                     child: Container(
-                      padding: const EdgeInsets.only(left: 30 , right: 30,top: 25,bottom: 25) ,
+                      padding: const EdgeInsets.only(left: 30 , right: 30,top: 25,bottom: 0) ,
                       decoration: BoxDecoration(
                         boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.2), blurRadius: 40)],
                       ),
                       child: Image.asset(
                         "assets/splash.png",
                         fit: BoxFit.contain,
-                        height: 300, // Adjust size as needed
-                        width: 300,  // Adjust size as needed
+                        height: 250, // Adjust size as needed
+                        width: 250,  // Adjust size as needed
                       ),
                     ),
                   ),
@@ -63,7 +63,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                     delay: 0.3,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(40),

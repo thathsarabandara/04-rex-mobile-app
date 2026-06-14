@@ -1,0 +1,12 @@
+name: lucide_icons
+description: A local compatibility shim mapping old lucide_icons to lucide_icons_flutter.
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lucide_icons_flutter: ^3.0.0
