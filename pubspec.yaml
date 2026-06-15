@@ -42,6 +42,8 @@ dependencies:
   flutter_webrtc: ^1.4.1
   lucide_icons:
     path: ./packages/lucide_icons
+  flutter_blue_plus: ^2.3.8
+  permission_handler: ^12.0.3
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
