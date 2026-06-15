@@ -5,77 +5,102 @@ class PatrolControlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Patrol Routes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Patrol Routes', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 16),
           Container(
             height: 250,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: isDark ? Colors.black26 : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(20),
               image: const DecorationImage(
-                image: AssetImage('assets/REX-47.png'), // placeholder for map
+                image: AssetImage('REX-47.png'),
                 fit: BoxFit.cover,
-                opacity: 0.2,
+                opacity: 0.15,
               ),
-              border: Border.all(color: const Color(0xFFF1F5F9)),
+              border: Border.all(color: theme.dividerColor),
             ),
-            child: const Center(
-              child: Text('Map Editor Placeholder', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+            child: Center(
+              child: Text(
+                'Map Editor Placeholder', 
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7), fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Waypoints', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+              Text(
+                'Waypoints', 
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+              ),
               TextButton.icon(
                 onPressed: () {},
-                icon: const Icon(Icons.add, color: Color(0xFF8B5CF6)),
-                label: const Text('Add Point', style: TextStyle(color: Color(0xFF8B5CF6))),
+                icon: Icon(Icons.add, color: primary),
+                label: Text('Add Point', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _buildWaypointTile('Point 1', 'Living Room', '0.0s'),
-          _buildWaypointTile('Point 2', 'Kitchen', '5.0s'),
-          _buildWaypointTile('Point 3', 'Hallway', '12.0s'),
+          _buildWaypointTile(context, 'Point 1', 'Living Room', '0.0s', Colors.indigo),
+          _buildWaypointTile(context, 'Point 2', 'Kitchen', '5.0s', Colors.teal),
+          _buildWaypointTile(context, 'Point 3', 'Hallway', '12.0s', Colors.orange),
           const SizedBox(height: 100),
         ],
       ),
     );
   }
 
-  Widget _buildWaypointTile(String title, String location, String delay) {
+  Widget _buildWaypointTile(BuildContext context, String title, String location, String delay, Color color) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? theme.cardColor : color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: isDark ? theme.dividerColor : color.withValues(alpha: 0.12), width: 1.5),
       ),
       child: Row(
         children: [
-          const Icon(Icons.location_on, color: Color(0xFF8B5CF6)),
+          Icon(Icons.location_on, color: color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(location, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  title, 
+                  style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+                ),
+                Text(
+                  location, 
+                  style: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6), fontSize: 12),
+                ),
               ],
             ),
           ),
-          Text('Wait: $delay', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475467))),
+          Text(
+            'Wait: $delay', 
+            style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8)),
+          ),
           const SizedBox(width: 8),
-          const Icon(Icons.drag_handle, color: Colors.grey),
+          Icon(Icons.drag_handle, color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5)),
         ],
       ),
     );

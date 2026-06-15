@@ -41,6 +41,9 @@ class _StatusCardState extends State<StatusCard> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
       onTapUp: (_) => _controller.reverse(),
@@ -54,21 +57,28 @@ class _StatusCardState extends State<StatusCard> with SingleTickerProviderStateM
         child: Container(
           padding: const EdgeInsets.all(18.0),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark 
+                ? theme.cardColor 
+                : Color.alphaBlend(widget.color.withValues(alpha: 0.15), Colors.white),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withValues(alpha: 0.08),
+                color: widget.color.withValues(alpha: isDark ? 0.04 : 0.12),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(
+              color: isDark 
+                  ? theme.dividerColor 
+                  : Color.alphaBlend(widget.color.withValues(alpha: 0.3), Colors.white), 
+              width: 1.5,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +106,7 @@ class _StatusCardState extends State<StatusCard> with SingleTickerProviderStateM
                     ),
                     child: Icon(widget.icon, color: widget.color, size: 24),
                   ),
-                  Icon(Icons.arrow_outward_rounded, color: Colors.grey.shade300, size: 20),
+                  Icon(Icons.arrow_outward_rounded, color: theme.dividerColor, size: 20),
                 ],
               ),
               const SizedBox(height: 16),
@@ -108,17 +118,17 @@ class _StatusCardState extends State<StatusCard> with SingleTickerProviderStateM
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 26,
-                      color: const Color(0xFF1D2939),
+                      color: theme.textTheme.titleLarge?.color,
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     widget.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF667085),
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
                       letterSpacing: 0.2,
                     ),
                     maxLines: 1,

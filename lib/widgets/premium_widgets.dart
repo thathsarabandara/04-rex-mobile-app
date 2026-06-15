@@ -2,22 +2,45 @@ import 'package:flutter/material.dart';
 
 // Organic Background Painter
 class HeaderWavePainter extends CustomPainter {
+  final bool isDark;
+  HeaderWavePainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final paint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF6D28D9), Color(0xFF9333EA)],
-        begin: Alignment.topLeft, end: Alignment.bottomRight,
+      ..shader = LinearGradient(
+        colors: isDark
+            ? [const Color(0xFF130E26), const Color(0xFF090514)]
+            : [const Color(0xFF7C3AED), const Color(0xFF9D4EDD)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ).createShader(rect);
     canvas.drawRect(rect, paint);
-    final blob1 = Paint()..color = const Color(0xFF06B6D4).withValues(alpha: 0.4)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
-    canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 150, blob1);
-    final blob2 = Paint()..color = const Color(0xFF8B5CF6).withValues(alpha: 0.4)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
-    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.5), 180, blob2);
+
+    if (isDark) {
+      final blob1 = Paint()
+        ..color = const Color(0xFF7C3AED).withValues(alpha: 0.15)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
+      canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 160, blob1);
+      final blob2 = Paint()
+        ..color = const Color(0xFFC084FC).withValues(alpha: 0.15)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 120);
+      canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.5), 200, blob2);
+    } else {
+      final blob1 = Paint()
+        ..color = const Color(0xFF06B6D4).withValues(alpha: 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+      canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 150, blob1);
+      final blob2 = Paint()
+        ..color = const Color(0xFFC084FC).withValues(alpha: 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
+      canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.5), 180, blob2);
+    }
   }
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant HeaderWavePainter oldDelegate) => oldDelegate.isDark != isDark;
 }
 
 // Custom Slide Fade Animation

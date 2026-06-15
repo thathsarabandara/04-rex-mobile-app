@@ -5,12 +5,16 @@ class ObjectDetectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Live Stream & Detection', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Live Stream & Detection', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 16),
           Container(
             height: 250,
@@ -19,10 +23,11 @@ class ObjectDetectionScreen extends StatelessWidget {
               color: Colors.black,
               borderRadius: BorderRadius.circular(20),
               image: const DecorationImage(
-                image: AssetImage('assets/REX-47.png'), // placeholder stream
+                image: AssetImage('REX-47.png'),
                 fit: BoxFit.cover,
                 opacity: 0.5,
               ),
+              border: Border.all(color: theme.dividerColor),
             ),
             child: Stack(
               children: [
@@ -33,13 +38,16 @@ class ObjectDetectionScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Detected Objects Log', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Detected Objects Log', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 12),
-          _buildLogItem('Person', '98%', Colors.green),
-          _buildLogItem('Chair', '85%', Colors.blue),
-          _buildLogItem('Bottle', '72%', Colors.orange),
-          _buildLogItem('Dog', '91%', Colors.purple),
-          _buildLogItem('Cat', '88%', Colors.pink),
+          _buildLogItem(context, 'Person', '98%', Colors.green),
+          _buildLogItem(context, 'Chair', '85%', Colors.blue),
+          _buildLogItem(context, 'Bottle', '72%', Colors.orange),
+          _buildLogItem(context, 'Dog', '91%', Colors.purple),
+          _buildLogItem(context, 'Cat', '88%', Colors.pink),
           const SizedBox(height: 100),
         ],
       ),
@@ -69,14 +77,15 @@ class ObjectDetectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogItem(String label, String confidence, Color color) {
+  Widget _buildLogItem(BuildContext context, String label, String confidence, Color color) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,7 +94,10 @@ class ObjectDetectionScreen extends StatelessWidget {
             children: [
               Icon(Icons.crop_free, color: color, size: 20),
               const SizedBox(width: 12),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                label, 
+                style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+              ),
             ],
           ),
           Text(confidence, style: TextStyle(color: color, fontWeight: FontWeight.w900)),

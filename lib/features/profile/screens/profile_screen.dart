@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../widgets/premium_widgets.dart';
+import '../../../core/theme/providers/theme_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animController;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _animController.forward();
   }
 
@@ -27,13 +29,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isLight = theme.brightness == Brightness.light;
+    final primary = theme.colorScheme.primary;
+    final themeMode = ref.watch(themeModeProvider);
+
+    String themeLabel = 'System';
+    if (themeMode == ThemeMode.light) {
+      themeLabel = 'Light';
+    } else if (themeMode == ThemeMode.dark) {
+      themeLabel = 'Dark';
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0, right: 0, height: 350,
-            child: CustomPaint(painter: HeaderWavePainter()),
+            child: CustomPaint(painter: HeaderWavePainter(isDark: isDark)),
           ),
           
           SafeArea(
@@ -68,18 +83,25 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 30, offset: Offset(0, -10))],
+                    decoration: BoxDecoration(
+                      color: theme.scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isLight 
+                              ? Colors.black.withValues(alpha: 0.05) 
+                              : Colors.black.withValues(alpha: 0.3), 
+                          blurRadius: 24, 
+                          offset: const Offset(0, -8),
+                        )
+                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 60),
+                        padding: const EdgeInsets.only(bottom: 120),
                         child: Column(
                           children: [
-                            // Avatar overlapping the top
                             Transform.translate(
                               offset: const Offset(0, -50),
                               child: SlideFade(
@@ -89,45 +111,72 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(6),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
+                                      decoration: BoxDecoration(
+                                        color: theme.cardColor,
                                         shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isLight ? 0.04 : 0.2),
+                                            blurRadius: 16,
+                                          )
+                                        ],
                                       ),
                                       child: Container(
                                         width: 100, height: 100,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEFF4FF),
+                                          color: theme.scaffoldBackgroundColor,
                                           shape: BoxShape.circle,
-                                          border: Border.all(color: const Color(0xFFEEF2F6), width: 1),
+                                          border: Border.all(color: theme.dividerColor, width: 1.5),
                                         ),
-                                        child: const Icon(Icons.person_rounded, size: 50, color: Color(0xFF155EEF)),
+                                        child: Icon(Icons.person_rounded, size: 50, color: primary),
                                       ),
                                     ),
                                     const SizedBox(height: 16),
-                                    const Text('John Doe', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 28, color: Color(0xFF1D2939), letterSpacing: -0.5)),
+                                    Text(
+                                      'Thathsara Bandara', 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900, 
+                                        fontSize: 28, 
+                                        color: theme.textTheme.titleLarge?.color, 
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
                                     const SizedBox(height: 4),
-                                    const Text('Chief Operator', style: TextStyle(color: Color(0xFF155EEF), fontWeight: FontWeight.w700, fontSize: 14)),
+                                    Text(
+                                      'Chief Operator', 
+                                      style: TextStyle(
+                                        color: primary, 
+                                        fontWeight: FontWeight.w700, 
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
                             
-                            // Transform shifted content up since we pushed the avatar up
                             Transform.translate(
                               offset: const Offset(0, -20),
                               child: Column(
                                 children: [
-                                  _buildSection('Account', 0.2, [
-                                    _buildListTile(Icons.person_outline_rounded, 'Edit Profile', const Color(0xFF155EEF)),
-                                    _buildListTile(Icons.lock_outline_rounded, 'Security', const Color(0xFFF59E0B)),
+                                  _buildSection(context, 'Account', 0.2, [
+                                    _buildListTile(context, Icons.person_outline_rounded, 'Edit Profile', primary),
+                                    _buildListTile(context, Icons.lock_outline_rounded, 'Security', Colors.orange),
                                   ]),
-                                  _buildSection('Fleet Settings', 0.3, [
-                                    _buildListTile(Icons.precision_manufacturing_outlined, 'Manage Robots', const Color(0xFF10B981)),
-                                    _buildListTile(Icons.add_circle_outline_rounded, 'Pair New Device', const Color(0xFF8B5CF6)),
+                                  _buildSection(context, 'Fleet Settings', 0.3, [
+                                    _buildListTile(context, Icons.precision_manufacturing_outlined, 'Manage Robots', Colors.teal),
+                                    _buildListTile(context, Icons.add_circle_outline_rounded, 'Pair New Device', theme.colorScheme.secondary),
                                   ]),
-                                  _buildSection('App Preferences', 0.4, [
-                                    _buildListTile(Icons.dark_mode_outlined, 'Theme', const Color(0xFF64748B), trailing: 'System'),
-                                    _buildListTile(Icons.language_rounded, 'Language', const Color(0xFF64748B), trailing: 'English'),
+                                   _buildSection(context, 'App Preferences', 0.4, [
+                                    _buildListTile(
+                                      context, 
+                                      Icons.dark_mode_outlined, 
+                                      'Theme', 
+                                      primary, 
+                                      trailing: themeLabel,
+                                      onTap: () => _showThemeSelector(context),
+                                    ),
+                                    _buildListTile(context, Icons.language_rounded, 'Language', primary, trailing: 'English'),
                                   ]),
                                   
                                   const SizedBox(height: 24),
@@ -144,8 +193,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                           icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
                                           label: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w800, fontSize: 16)),
                                           style: TextButton.styleFrom(
-                                            backgroundColor: const Color(0xFFFEF2F2),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(20),
+                                              side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.15)),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -168,7 +220,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildSection(String title, double delay, List<Widget> children) {
+  Widget _buildSection(BuildContext context, String title, double delay, List<Widget> children) {
+    final theme = Theme.of(context);
     return SlideFade(
       animation: _animController,
       delay: delay,
@@ -181,15 +234,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               padding: const EdgeInsets.only(left: 8, bottom: 12),
               child: Text(
                 title.toUpperCase(),
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5),
+                style: TextStyle(
+                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7), 
+                  fontSize: 11, 
+                  fontWeight: FontWeight.w900, 
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
-                border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                border: Border.all(color: theme.dividerColor, width: 1.0),
               ),
               child: Column(children: children),
             ),
@@ -199,7 +256,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildListTile(IconData icon, String title, Color iconColor, {String? trailing}) {
+  Widget _buildListTile(BuildContext context, IconData icon, String title, Color iconColor, {String? trailing, VoidCallback? onTap}) {
+    final theme = Theme.of(context);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
@@ -210,18 +268,93 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ),
         child: Icon(icon, color: iconColor, size: 22),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1D2939))),
+      title: Text(
+        title, 
+        style: TextStyle(
+          fontWeight: FontWeight.w700, 
+          fontSize: 16, 
+          color: theme.textTheme.titleMedium?.color,
+        ),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (trailing != null) ...[
-            Text(trailing, style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600, fontSize: 14)),
+            Text(
+              trailing, 
+              style: TextStyle(
+                color: theme.textTheme.bodySmall?.color, 
+                fontWeight: FontWeight.w600, 
+                fontSize: 14,
+              ),
+            ),
             const SizedBox(width: 8),
           ],
-          const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFFCBD5E1)),
+          Icon(Icons.arrow_forward_ios_rounded, size: 14, color: theme.dividerColor),
         ],
       ),
-      onTap: () {},
+      onTap: onTap,
+    );
+  }
+
+  void _showThemeSelector(BuildContext context) {
+    final theme = Theme.of(context);
+    final currentThemeMode = ref.read(themeModeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Choose Theme',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: theme.textTheme.titleLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildThemeOption(context, 'System Default', ThemeMode.system, Icons.phone_android_rounded, currentThemeMode),
+                _buildThemeOption(context, 'Light Mode', ThemeMode.light, Icons.light_mode_rounded, currentThemeMode),
+                _buildThemeOption(context, 'Dark Mode', ThemeMode.dark, Icons.dark_mode_rounded, currentThemeMode),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption(BuildContext context, String title, ThemeMode mode, IconData icon, ThemeMode currentMode) {
+    final theme = Theme.of(context);
+    final isSelected = mode == currentMode;
+    final primary = theme.colorScheme.primary;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      leading: Icon(icon, color: isSelected ? primary : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? primary : theme.textTheme.titleMedium?.color,
+        ),
+      ),
+      trailing: isSelected ? Icon(Icons.check_circle_rounded, color: primary) : null,
+      onTap: () {
+        ref.read(themeModeProvider.notifier).setThemeMode(mode);
+        Navigator.pop(context);
+      },
     );
   }
 }

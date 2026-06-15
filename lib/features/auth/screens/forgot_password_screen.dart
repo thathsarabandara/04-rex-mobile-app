@@ -10,14 +10,14 @@ class ForgotPasswordScreen extends StatefulWidget {
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with SingleTickerProviderStateMixin {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _animController.forward();
   }
 
@@ -30,13 +30,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isLight = theme.brightness == Brightness.light;
+    final primary = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0, right: 0, height: 700,
-            child: CustomPaint(painter: HeaderWavePainter()),
+            child: CustomPaint(painter: HeaderWavePainter(isDark: isDark)),
           ),
           SafeArea(
             child: Column(
@@ -103,14 +108,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(32),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: theme.cardColor,
                                         borderRadius: BorderRadius.circular(40),
-                                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(0, 10))],
+                                        border: Border.all(color: theme.dividerColor),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isLight ? 0.04 : 0.2), 
+                                            blurRadius: 30, 
+                                            offset: const Offset(0, 10),
+                                          )
+                                        ],
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           _buildTextField(
+                                            context: context,
                                             controller: _emailController,
                                             label: 'Email',
                                             hint: 'john.doe@example.com',
@@ -118,16 +131,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.push('/reset-password'), // Navigate to Reset Password
+                                            onTap: () => context.push('/reset-password'),
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF7C3AED),
+                                                color: primary,
                                                 borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: primary.withValues(alpha: 0.25), 
+                                                    blurRadius: 20, 
+                                                    offset: const Offset(0, 8),
+                                                  )
+                                                ],
                                               ),
-                                              child: const Center(child: Text('Send Reset Link', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800))),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Send Reset Link', 
+                                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -152,34 +176,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
     required IconData icon,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1D2939)),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.titleMedium?.color),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: theme.dividerColor),
           ),
           child: TextFormField(
             controller: controller,
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.transparent,
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6)),
+              prefixIcon: Icon(icon, color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),

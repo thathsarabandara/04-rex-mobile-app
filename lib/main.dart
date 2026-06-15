@@ -14,11 +14,16 @@ import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/robots/screens/robots_screen.dart';
 import 'features/control/screens/control_center_screen.dart';
 import 'features/control/screens/teleop_screen.dart';
+import 'features/connection/screens/connection_screen.dart';
 import 'features/vision/screens/vision_center_screen.dart';
-
-import 'features/media/screens/media_screen.dart';
+import 'features/assistant/screens/assistant_screen.dart';
+import 'features/automation/screens/automation_screen.dart';
+import 'features/analytics/screens/analytics_screen.dart';
+import 'features/notifications/screens/notifications_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'widgets/premium_widgets.dart';
+import 'core/theme/providers/theme_provider.dart';
+import 'features/connection/providers/bluetooth_provider.dart';
 
 void main() {
   runApp(const ProviderScope(child: GrabberApp()));
@@ -83,19 +88,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/assistant',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Assistant'))),
+            builder: (context, state) => const AssistantScreen(),
           ),
           GoRoute(
             path: '/automation',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Automation'))),
+            builder: (context, state) => const AutomationScreen(),
           ),
           GoRoute(
             path: '/analytics',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Analytics'))),
+            builder: (context, state) => const AnalyticsScreen(),
           ),
           GoRoute(
             path: '/notifications',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Notifications'))),
+            builder: (context, state) => const NotificationsScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -107,6 +112,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/teleop',
         builder: (context, state) => const TeleopScreen(),
       ),
+      GoRoute(
+        path: '/connection',
+        builder: (context, state) => const ConnectionScreen(),
+      ),
     ],
   );
 });
@@ -117,26 +126,27 @@ class GrabberApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'REX-47',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
 
   @override
@@ -144,7 +154,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.initState();
     _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _animController.forward();
-    Future.delayed(const Duration(seconds: 3), () {
+
+    final timerFuture = Future.delayed(const Duration(seconds: 3));
+
+    Future.microtask(() async {
+      await ref.read(bluetoothProvider.notifier).requestPermissions();
+      await timerFuture;
+
       if (mounted) {
         context.go('/onboarding');
       }

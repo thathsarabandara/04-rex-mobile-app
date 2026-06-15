@@ -40,22 +40,33 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: widget.child,
       bottomNavigationBar: SafeArea(
         child: Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           height: 64,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.95),
+            color: theme.cardColor.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10)),
+              BoxShadow(
+                color: isLight 
+                    ? Colors.black.withValues(alpha: 0.04) 
+                    : Colors.black.withValues(alpha: 0.25), 
+                blurRadius: 24, 
+                offset: const Offset(0, 8),
+              ),
             ],
-            border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+            border: Border.all(
+              color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF261D40), 
+              width: 1.0,
+            ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
@@ -83,16 +94,22 @@ class _MainShellState extends State<MainShell> {
 
   Widget _buildNavItem(IconData icon, IconData activeIcon, String label, int index, int selectedIndex, BuildContext context) {
     final isSelected = selectedIndex == index;
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final isLight = theme.brightness == Brightness.light;
+
     return GestureDetector(
       onTap: () => _onItemTapped(index, context),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: EdgeInsets.symmetric(horizontal: isSelected ? 16 : 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8B5CF6).withValues(alpha: 0.1) : Colors.transparent, // Purple theme
+          color: isSelected 
+              ? primary.withValues(alpha: isLight ? 0.08 : 0.15) 
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -100,14 +117,21 @@ class _MainShellState extends State<MainShell> {
           children: [
             Icon(
               isSelected ? activeIcon : icon, 
-              color: isSelected ? const Color(0xFF8B5CF6) : const Color(0xFF94A3B8), 
-              size: 24,
+              color: isSelected 
+                  ? primary 
+                  : (isLight ? const Color(0xFF64748B) : const Color(0xFF94A3B8)), 
+              size: 22,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: -0.2),
+                style: TextStyle(
+                  color: primary, 
+                  fontWeight: FontWeight.w800, 
+                  fontSize: 13, 
+                  letterSpacing: -0.2,
+                ),
               ),
             ]
           ],

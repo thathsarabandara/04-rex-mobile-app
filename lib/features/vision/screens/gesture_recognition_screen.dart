@@ -5,31 +5,36 @@ class GestureRecognitionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Supported Gestures', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Supported Gestures', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 16),
-          _buildGestureCard('Open Palm', 'Move Forward', Icons.pan_tool_rounded, Colors.blue),
-          _buildGestureCard('Closed Fist', 'Stop', Icons.back_hand_rounded, Colors.red),
-          _buildGestureCard('Thumbs Up', 'Acknowledge', Icons.thumb_up_rounded, Colors.green),
-          _buildGestureCard('Swipe Left', 'Turn Left', Icons.swipe_left_rounded, Colors.purple),
+          _buildGestureCard(context, 'Open Palm', 'Move Forward', Icons.pan_tool_rounded, Colors.blue),
+          _buildGestureCard(context, 'Closed Fist', 'Stop', Icons.back_hand_rounded, Colors.red),
+          _buildGestureCard(context, 'Thumbs Up', 'Acknowledge', Icons.thumb_up_rounded, Colors.green),
+          _buildGestureCard(context, 'Swipe Left', 'Turn Left', Icons.swipe_left_rounded, Colors.purple),
           const SizedBox(height: 100),
         ],
       ),
     );
   }
 
-  Widget _buildGestureCard(String gesture, String action, IconData icon, Color color) {
+  Widget _buildGestureCard(BuildContext context, String gesture, String action, IconData icon, Color color) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
         children: [
@@ -43,8 +48,14 @@ class GestureRecognitionScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(gesture, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Action: $action', style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(
+                  gesture, 
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.textTheme.titleMedium?.color),
+                ),
+                Text(
+                  'Action: $action', 
+                  style: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6), fontSize: 14),
+                ),
               ],
             ),
           ),

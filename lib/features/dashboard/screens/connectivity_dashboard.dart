@@ -10,29 +10,38 @@ class ConnectivityDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildConnectionCard('WiFi Signal', Icons.wifi_rounded, 'Strong', '-45 dBm', Colors.green),
+          _buildConnectionCard(context, 'WiFi Signal', Icons.wifi_rounded, 'Strong', '-45 dBm', Colors.green),
           const SizedBox(height: 16),
-          _buildConnectionCard('Cloud Connection', Icons.cloud_done_rounded, 'Synced', 'Last update: 2s ago', Colors.blue),
+          _buildConnectionCard(context, 'Cloud Connection', Icons.cloud_done_rounded, 'Synced', 'Last update: 2s ago', Colors.blue),
           const SizedBox(height: 16),
-          _buildConnectionCard('MQTT Latency', Icons.compare_arrows_rounded, '32 ms', 'Broker: tcp://broker.hivemq.com', Colors.purple),
+          _buildConnectionCard(context, 'MQTT Latency', Icons.compare_arrows_rounded, '32 ms', 'Broker: tcp://broker.hivemq.com', Colors.purple),
           const SizedBox(height: 16),
-          _buildConnectionCard('WebSocket Latency', Icons.sync_alt_rounded, '45 ms', 'Stream Active', Colors.teal),
+          _buildConnectionCard(context, 'WebSocket Latency', Icons.sync_alt_rounded, '45 ms', 'Stream Active', Colors.teal),
           const SizedBox(height: 16),
-          _buildConnectionCard('BLE Strength', Icons.bluetooth_rounded, 'Fair', '-72 dBm', Colors.orange),
+          _buildConnectionCard(context, 'BLE Strength', Icons.bluetooth_rounded, 'Fair', '-72 dBm', Colors.orange),
           const SizedBox(height: 100),
         ],
       ),
     );
   }
 
-  Widget _buildConnectionCard(String title, IconData icon, String status, String detail, Color color) {
+  Widget _buildConnectionCard(BuildContext context, String title, IconData icon, String status, String detail, Color color) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? theme.cardColor : color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: isDark ? theme.dividerColor : color.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03), 
+            blurRadius: 10, 
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Row(
         children: [
@@ -49,9 +58,15 @@ class ConnectivityDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1D2939))),
+                Text(
+                  title, 
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.textTheme.titleMedium?.color),
+                ),
                 const SizedBox(height: 4),
-                Text(detail, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                Text(
+                  detail, 
+                  style: TextStyle(fontSize: 13, color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
+                ),
               ],
             ),
           ),

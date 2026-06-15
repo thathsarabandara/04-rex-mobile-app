@@ -11,30 +11,34 @@ class HomeDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildRobotStatusCard(),
+          _buildRobotStatusCard(context),
           const SizedBox(height: 24),
-          _buildLiveCameraPreview(),
+          _buildLiveCameraPreview(context),
           const SizedBox(height: 24),
-          _buildLatestEvents(),
+          _buildLatestEvents(context),
           const SizedBox(height: 24),
-          _buildQuickActions(),
+          _buildQuickActions(context),
           const SizedBox(height: 24),
-          _buildAiInsights(),
-          const SizedBox(height: 100), // spacing for bottom nav
+          _buildAiInsights(context),
+          const SizedBox(height: 100),
         ],
       ),
     );
   }
 
-  Widget _buildRobotStatusCard() {
+  Widget _buildRobotStatusCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final secondary = theme.colorScheme.secondary;
+
     return BouncingCard(
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF8B5CF6),
+          gradient: LinearGradient(colors: [primary, secondary]),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10)),
+            BoxShadow(color: primary.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10)),
           ],
         ),
         child: Column(
@@ -78,14 +82,18 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildLiveCameraPreview() {
+  Widget _buildLiveCameraPreview(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Live Camera', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+        Text(
+          'Live Camera', 
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+        ),
         const SizedBox(height: 12),
         BouncingCard(
-          onTap: () {}, // Open full camera
+          onTap: () {},
           child: Container(
             height: 160,
             width: double.infinity,
@@ -93,10 +101,11 @@ class HomeDashboard extends StatelessWidget {
               color: Colors.black87,
               borderRadius: BorderRadius.circular(20),
               image: const DecorationImage(
-                image: AssetImage('assets/REX-47.png'), // placeholder
+                image: AssetImage('REX-47.png'),
                 fit: BoxFit.cover,
                 opacity: 0.5,
               ),
+              border: Border.all(color: theme.dividerColor),
             ),
             child: Center(
               child: Container(
@@ -114,26 +123,38 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildLatestEvents() {
+  Widget _buildLatestEvents(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Latest Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+        Text(
+          'Latest Events', 
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+        ),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? theme.cardColor : primary.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFF1F5F9)),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+            border: Border.all(color: isDark ? theme.dividerColor : primary.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02), 
+                blurRadius: 10,
+              )
+            ],
           ),
           child: Column(
             children: [
-              _buildEventTile(Icons.person_rounded, 'Person detected', '2 mins ago', Colors.blue),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              _buildEventTile(Icons.brightness_low_rounded, 'Low light detected', '15 mins ago', Colors.orange),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              _buildEventTile(Icons.check_circle_rounded, 'Patrol completed', '1 hour ago', Colors.green),
+              _buildEventTile(context, Icons.person_rounded, 'Person detected', '2 mins ago', Colors.blue),
+              Divider(height: 1, color: theme.dividerColor),
+              _buildEventTile(context, Icons.brightness_low_rounded, 'Low light detected', '15 mins ago', Colors.orange),
+              Divider(height: 1, color: theme.dividerColor),
+              _buildEventTile(context, Icons.check_circle_rounded, 'Patrol completed', '1 hour ago', Colors.green),
             ],
           ),
         ),
@@ -141,23 +162,34 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventTile(IconData icon, String title, String time, Color color) {
+  Widget _buildEventTile(BuildContext context, IconData icon, String title, String time, Color color) {
+    final theme = Theme.of(context);
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Icon(icon, color: color, size: 20),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      trailing: Text(time, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      title: Text(
+        title, 
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: theme.textTheme.titleMedium?.color),
+      ),
+      trailing: Text(
+        time, 
+        style: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6), fontSize: 12),
+      ),
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+        Text(
+          'Quick Actions', 
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+        ),
         const SizedBox(height: 12),
         GridView.count(
           shrinkWrap: true,
@@ -167,17 +199,20 @@ class HomeDashboard extends StatelessWidget {
           crossAxisSpacing: 12,
           childAspectRatio: 0.85,
           children: [
-            _buildActionIcon(Icons.explore_rounded, 'Start Patrol', Colors.indigo),
-            _buildActionIcon(Icons.home_rounded, 'Return Home', Colors.teal),
-            _buildActionIcon(Icons.stop_circle_rounded, 'Stop Robot', Colors.red),
-            _buildActionIcon(Icons.shield_rounded, 'Security', Colors.orange),
+            _buildActionIcon(context, Icons.explore_rounded, 'Start Patrol', Colors.indigo),
+            _buildActionIcon(context, Icons.home_rounded, 'Return Home', Colors.teal),
+            _buildActionIcon(context, Icons.stop_circle_rounded, 'Stop Robot', Colors.red),
+            _buildActionIcon(context, Icons.shield_rounded, 'Security', Colors.orange),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildActionIcon(IconData icon, String label, Color color) {
+  Widget _buildActionIcon(BuildContext context, IconData icon, String label, Color color) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return BouncingCard(
       onTap: () {},
       child: Column(
@@ -186,45 +221,71 @@ class HomeDashboard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? theme.cardColor : color.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF1F5F9)),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4)],
+              border: Border.all(color: isDark ? theme.dividerColor : color.withValues(alpha: 0.15)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02), 
+                  blurRadius: 4,
+                )
+              ],
             ),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF475467)), textAlign: TextAlign.center),
+          Text(
+            label, 
+            style: TextStyle(
+              fontSize: 10, 
+              fontWeight: FontWeight.w600, 
+              color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
+            ), 
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAiInsights() {
+  Widget _buildAiInsights(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final secondary = theme.colorScheme.secondary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('AI Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+        Text(
+          'AI Insights', 
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [const Color(0xFF8B5CF6).withValues(alpha: 0.1), const Color(0xFFC084FC).withValues(alpha: 0.1)]),
+            gradient: LinearGradient(colors: [primary.withValues(alpha: 0.1), secondary.withValues(alpha: 0.1)]),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
+            border: Border.all(color: primary.withValues(alpha: 0.2)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.auto_awesome_rounded, color: Color(0xFF8B5CF6), size: 24),
+              Icon(Icons.auto_awesome_rounded, color: primary, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('No unusual activity detected.', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+                    Text(
+                      'No unusual activity detected.', 
+                      style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Battery usage increased by 12% compared to yesterday.', style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.4)),
+                    Text(
+                      'Battery usage increased by 12% compared to yesterday.', 
+                      style: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7), fontSize: 13, height: 1.4),
+                    ),
                   ],
                 ),
               )

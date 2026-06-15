@@ -10,7 +10,7 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -22,7 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _animController.forward();
   }
 
@@ -38,13 +38,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isLight = theme.brightness == Brightness.light;
+    final primary = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0, right: 0, height: 700,
-            child: CustomPaint(painter: HeaderWavePainter()),
+            child: CustomPaint(painter: HeaderWavePainter(isDark: isDark)),
           ),
           SafeArea(
             child: Column(
@@ -112,14 +117,22 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(32),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: theme.cardColor,
                                         borderRadius: BorderRadius.circular(40),
-                                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(0, 10))],
+                                        border: Border.all(color: theme.dividerColor),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isLight ? 0.04 : 0.2), 
+                                            blurRadius: 30, 
+                                            offset: const Offset(0, 10),
+                                          )
+                                        ],
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           _buildTextField(
+                                            context: context,
                                             controller: _nameController,
                                             label: 'Full Name',
                                             hint: 'John Doe',
@@ -127,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                           ),
                                           const SizedBox(height: 24),
                                           _buildTextField(
+                                            context: context,
                                             controller: _emailController,
                                             label: 'Email',
                                             hint: 'john.doe@example.com',
@@ -134,6 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                           ),
                                           const SizedBox(height: 24),
                                           _buildTextField(
+                                            context: context,
                                             controller: _passwordController,
                                             label: 'Password',
                                             hint: '••••••••',
@@ -142,34 +157,53 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                           ),
                                           const SizedBox(height: 24),
                                           _buildTextField(
+                                            context: context,
                                             controller: _passwordConfirmController,
                                             label: 'Confirm Password',
                                             hint: '••••••••',
                                             icon: LucideIcons.lock,
                                             isPassword: true,
+                                            isConfirmPassword: true,
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.go('/otp'), // Navigate to OTP
+                                            onTap: () => context.go('/otp'),
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF7C3AED),
+                                                color: primary,
                                                 borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: primary.withValues(alpha: 0.25), 
+                                                    blurRadius: 20, 
+                                                    offset: const Offset(0, 8),
+                                                  )
+                                                ],
                                               ),
-                                              child: const Center(child: Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800))),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Sign Up', 
+                                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(height: 24),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              const Text('Already have an account?', style: TextStyle(color: Color(0xFF64748B))),
+                                              Text(
+                                                'Already have an account?', 
+                                                style: TextStyle(color: theme.textTheme.bodySmall?.color),
+                                              ),
                                               TextButton(
                                                 onPressed: () => context.go('/login'),
-                                                child: const Text('Login', style: TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.bold)),
+                                                child: Text(
+                                                  'Login', 
+                                                  style: TextStyle(color: primary, fontWeight: FontWeight.bold),
+                                                ),
                                               ),
                                             ],
                                           )
@@ -195,45 +229,53 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
     required IconData icon,
     bool isPassword = false,
+    bool isConfirmPassword = false,
   }) {
+    final theme = Theme.of(context);
+    final obscure = isConfirmPassword ? _obscurePasswordConfirm : _obscurePassword;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1D2939)),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.titleMedium?.color),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: theme.dividerColor),
           ),
           child: TextFormField(
             controller: controller,
-            style: const TextStyle(color: Colors.black),
-            obscureText: isPassword && _obscurePassword,
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+            obscureText: isPassword && obscure,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.transparent,
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6)),
+              prefixIcon: Icon(icon, color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
               suffixIcon: isPassword
                   ? IconButton(
                       icon: Icon(
-                        _obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
-                        color: const Color(0xFF64748B),
+                        obscure ? LucideIcons.eyeOff : LucideIcons.eye,
+                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                       onPressed: () {
                         setState(() {
-                          _obscurePassword = !_obscurePassword;
+                          if (isConfirmPassword) {
+                            _obscurePasswordConfirm = !_obscurePasswordConfirm;
+                          } else {
+                            _obscurePassword = !_obscurePassword;
+                          }
                         });
                       },
                     )

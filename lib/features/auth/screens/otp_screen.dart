@@ -10,14 +10,14 @@ class OtpScreen extends StatefulWidget {
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMixin {
+class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _otpController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _animController.forward();
   }
 
@@ -30,13 +30,18 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isLight = theme.brightness == Brightness.light;
+    final primary = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0, right: 0, height: 700,
-            child: CustomPaint(painter: HeaderWavePainter()),
+            child: CustomPaint(painter: HeaderWavePainter(isDark: isDark)),
           ),
           SafeArea(
             child: Column(
@@ -103,14 +108,22 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(32),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: theme.cardColor,
                                         borderRadius: BorderRadius.circular(40),
-                                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(0, 10))],
+                                        border: Border.all(color: theme.dividerColor),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isLight ? 0.04 : 0.2), 
+                                            blurRadius: 30, 
+                                            offset: const Offset(0, 10),
+                                          )
+                                        ],
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           _buildTextField(
+                                            context: context,
                                             controller: _otpController,
                                             label: 'OTP Code',
                                             hint: '123456',
@@ -123,21 +136,38 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF7C3AED),
+                                                color: primary,
                                                 borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: primary.withValues(alpha: 0.25), 
+                                                    blurRadius: 20, 
+                                                    offset: const Offset(0, 8),
+                                                  )
+                                                ],
                                               ),
-                                              child: const Center(child: Text('Verify & Continue', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800))),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Verify & Continue', 
+                                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(height: 24),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              const Text("Didn't receive code?", style: TextStyle(color: Color(0xFF64748B))),
+                                              Text(
+                                                "Didn't receive code?", 
+                                                style: TextStyle(color: theme.textTheme.bodySmall?.color),
+                                              ),
                                               TextButton(
-                                                onPressed: () {}, // Resend action
-                                                child: const Text('Resend', style: TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.bold)),
+                                                onPressed: () {},
+                                                child: Text(
+                                                  'Resend', 
+                                                  style: TextStyle(color: primary, fontWeight: FontWeight.bold),
+                                                ),
                                               ),
                                             ],
                                           )
@@ -163,28 +193,30 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
     required IconData icon,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1D2939)),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.titleMedium?.color),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: theme.dividerColor),
           ),
           child: TextFormField(
             controller: controller,
-            style: const TextStyle(color: Colors.black, letterSpacing: 8, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color, letterSpacing: 8, fontSize: 24, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             maxLength: 6,
@@ -193,7 +225,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
               filled: true,
               fillColor: Colors.transparent,
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8), letterSpacing: 8, fontSize: 24),
+              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6), letterSpacing: 8, fontSize: 24),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),

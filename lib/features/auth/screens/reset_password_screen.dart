@@ -10,7 +10,7 @@ class ResetPasswordScreen extends StatefulWidget {
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTickerProviderStateMixin {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
@@ -20,7 +20,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _animController.forward();
   }
 
@@ -34,13 +34,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isLight = theme.brightness == Brightness.light;
+    final primary = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0, right: 0, height: 700,
-            child: CustomPaint(painter: HeaderWavePainter()),
+            child: CustomPaint(painter: HeaderWavePainter(isDark: isDark)),
           ),
           SafeArea(
             child: Column(
@@ -107,14 +112,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(32),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: theme.cardColor,
                                         borderRadius: BorderRadius.circular(40),
-                                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(0, 10))],
+                                        border: Border.all(color: theme.dividerColor),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isLight ? 0.04 : 0.2), 
+                                            blurRadius: 30, 
+                                            offset: const Offset(0, 10),
+                                          )
+                                        ],
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           _buildTextField(
+                                            context: context,
                                             controller: _passwordController,
                                             label: 'New Password',
                                             hint: '••••••••',
@@ -129,6 +142,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                                           ),
                                           const SizedBox(height: 24),
                                           _buildTextField(
+                                            context: context,
                                             controller: _confirmController,
                                             label: 'Confirm Password',
                                             hint: '••••••••',
@@ -143,16 +157,27 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.go('/login'), // Back to login after reset
+                                            onTap: () => context.go('/login'),
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF7C3AED),
+                                                color: primary,
                                                 borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: primary.withValues(alpha: 0.25), 
+                                                    blurRadius: 20, 
+                                                    offset: const Offset(0, 8),
+                                                  )
+                                                ],
                                               ),
-                                              child: const Center(child: Text('Reset Password', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800))),
+                                              child: const Center(
+                                                child: Text(
+                                                  'Reset Password', 
+                                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -177,6 +202,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -185,35 +211,36 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with SingleTi
     bool obscureState = true,
     VoidCallback? onToggleObscure,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1D2939)),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.titleMedium?.color),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: theme.dividerColor),
           ),
           child: TextFormField(
             controller: controller,
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
             obscureText: isPassword && obscureState,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.transparent,
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-              prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6)),
+              prefixIcon: Icon(icon, color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
               suffixIcon: isPassword
                   ? IconButton(
                       icon: Icon(
                         obscureState ? LucideIcons.eyeOff : LucideIcons.eye,
-                        color: const Color(0xFF64748B),
+                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                       ),
                       onPressed: onToggleObscure,
                     )

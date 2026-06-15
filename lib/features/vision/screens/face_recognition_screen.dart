@@ -5,12 +5,16 @@ class FaceRecognitionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Live Face Tracking', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Live Face Tracking', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 16),
           Container(
             height: 200,
@@ -19,10 +23,11 @@ class FaceRecognitionScreen extends StatelessWidget {
               color: Colors.black,
               borderRadius: BorderRadius.circular(20),
               image: const DecorationImage(
-                image: AssetImage('assets/REX-47.png'),
+                image: AssetImage('REX-47.png'),
                 fit: BoxFit.cover,
                 opacity: 0.3,
               ),
+              border: Border.all(color: theme.dividerColor),
             ),
             child: Stack(
               children: [
@@ -32,7 +37,10 @@ class FaceRecognitionScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Known Faces', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Known Faces', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 12),
           GridView.count(
             shrinkWrap: true,
@@ -49,7 +57,10 @@ class FaceRecognitionScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          const Text('Unknown / Flagged', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            'Unknown / Flagged', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.titleMedium?.color),
+          ),
           const SizedBox(height: 12),
           _buildFaceChip('Unknown Person', false),
           const SizedBox(height: 100),
