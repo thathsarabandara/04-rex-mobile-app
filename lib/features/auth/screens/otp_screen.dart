@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../widgets/premium_widgets.dart';
 
-class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+import '../providers/auth_provider.dart';
+
+class OtpScreen extends ConsumerStatefulWidget {
+  final String? email;
+  const OtpScreen({super.key, this.email});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
+class _OtpScreenState extends ConsumerState<OtpScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _otpController = TextEditingController();
 
@@ -34,6 +38,18 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     final isDark = theme.brightness == Brightness.dark;
     final isLight = theme.brightness == Brightness.light;
     final primary = theme.colorScheme.primary;
+    final authState = ref.watch(authProvider);
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.error != null && previous?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
+      if (next.isAuthenticated) {
+        context.go('/dashboard');
+      }
+    });
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -131,7 +147,17 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.go('/dashboard'),
+                                            onTap: () async {
+                                              if (_otpController.text.length != 6) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Please enter a 6-digit OTP'), backgroundColor: Colors.red),
+                                                );
+                                                return;
+                                              }
+                                              await ref.read(authProvider.notifier).verifyOtp(
+                                                widget.email ?? '', _otpController.text
+                                              );
+                                            },
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -146,8 +172,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                                                   )
                                                 ],
                                               ),
-                                              child: const Center(
-                                                child: Text(
+                                              child: Center(
+                                                child: authState.isLoading
+                                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                                    : const Text(
                                                   'Verify & Continue', 
                                                   style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
                                                 ),

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../widgets/premium_widgets.dart';
 
-class LoginScreen extends StatefulWidget {
+import '../providers/auth_provider.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -37,6 +40,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     final isDark = theme.brightness == Brightness.dark;
     final isLight = theme.brightness == Brightness.light;
     final primary = theme.colorScheme.primary;
+    final authState = ref.watch(authProvider);
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.error != null && previous?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
+      if (next.isAuthenticated) {
+        context.go('/dashboard');
+      }
+    });
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -156,7 +171,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.go('/dashboard'),
+                                            onTap: () async {
+                                              if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Please enter email and password'), backgroundColor: Colors.red),
+                                                );
+                                                return;
+                                              }
+                                              await ref.read(authProvider.notifier).login(_emailController.text, _passwordController.text);
+                                            },
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -171,8 +194,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                                   )
                                                 ],
                                               ),
-                                              child: const Center(
-                                                child: Text(
+                                              child: Center(
+                                                child: authState.isLoading
+                                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                                    : const Text(
                                                   'Login', 
                                                   style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
                                                 ),

@@ -21,6 +21,9 @@ import 'features/automation/screens/automation_screen.dart';
 import 'features/analytics/screens/analytics_screen.dart';
 import 'features/notifications/screens/notifications_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
+import 'features/profile/screens/change_password_screen.dart';
+import 'features/profile/screens/sessions_screen.dart';
+import 'features/profile/screens/activity_log_screen.dart';
 import 'widgets/premium_widgets.dart';
 import 'core/theme/providers/theme_provider.dart';
 import 'features/connection/providers/bluetooth_provider.dart';
@@ -55,7 +58,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/otp',
-        builder: (context, state) => const OtpScreen(),
+        builder: (context, state) => OtpScreen(email: state.extra as String?),
       ),
       GoRoute(
         path: '/forgot-password',
@@ -115,6 +118,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/connection',
         builder: (context, state) => const ConnectionScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/sessions',
+        builder: (context, state) => const SessionsScreen(),
+      ),
+      GoRoute(
+        path: '/activity-log',
+        builder: (context, state) => const ActivityLogScreen(),
       ),
     ],
   );

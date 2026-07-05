@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../widgets/premium_widgets.dart';
 
-class RegisterScreen extends StatefulWidget {
+import '../providers/auth_provider.dart';
+
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> with TickerProviderStateMixin {
   late AnimationController _animController;
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -42,6 +45,15 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     final isDark = theme.brightness == Brightness.dark;
     final isLight = theme.brightness == Brightness.light;
     final primary = theme.colorScheme.primary;
+    final authState = ref.watch(authProvider);
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.error != null && previous?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -167,7 +179,23 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                           ),
                                           const SizedBox(height: 32),
                                           BouncingCard(
-                                            onTap: () => context.go('/otp'),
+                                            onTap: () async {
+                                              if (_passwordController.text != _passwordConfirmController.text) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Passwords do not match'), backgroundColor: Colors.red),
+                                                );
+                                                return;
+                                              }
+                                              final parts = _nameController.text.trim().split(' ');
+                                              final first = parts.isNotEmpty ? parts[0] : '';
+                                              final last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+                                              final success = await ref.read(authProvider.notifier).registerInitiate(
+                                                first, last, _emailController.text, _passwordController.text
+                                              );
+                                              if (success && mounted) {
+                                                context.go('/otp', extra: _emailController.text);
+                                              }
+                                            },
                                             child: Container(
                                               width: double.infinity,
                                               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -182,8 +210,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                                   )
                                                 ],
                                               ),
-                                              child: const Center(
-                                                child: Text(
+                                              child: Center(
+                                                child: authState.isLoading
+                                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                                    : const Text(
                                                   'Sign Up', 
                                                   style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
                                                 ),

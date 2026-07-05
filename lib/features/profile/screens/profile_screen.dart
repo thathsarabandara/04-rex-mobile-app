@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../widgets/premium_widgets.dart';
 import '../../../core/theme/providers/theme_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -161,7 +162,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                                 children: [
                                   _buildSection(context, 'Account', 0.2, [
                                     _buildListTile(context, Icons.person_outline_rounded, 'Edit Profile', primary),
-                                    _buildListTile(context, Icons.lock_outline_rounded, 'Security', Colors.orange),
+                                    _buildListTile(context, Icons.lock_outline_rounded, 'Change Password', Colors.orange, onTap: () => context.go('/change-password')),
+                                    _buildListTile(context, Icons.devices_rounded, 'Active Sessions', Colors.blue, onTap: () => context.go('/sessions')),
+                                    _buildListTile(context, Icons.history_rounded, 'Activity Log', Colors.purple, onTap: () => context.go('/activity-log')),
                                   ]),
                                   _buildSection(context, 'Fleet Settings', 0.3, [
                                     _buildListTile(context, Icons.precision_manufacturing_outlined, 'Manage Robots', Colors.teal),
@@ -189,7 +192,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                                         width: double.infinity,
                                         height: 60,
                                         child: TextButton.icon(
-                                          onPressed: () => context.go('/welcome'),
+                                          onPressed: () async {
+                                            await ref.read(authProvider.notifier).logout();
+                                            if (mounted) context.go('/welcome');
+                                          },
                                           icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
                                           label: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w800, fontSize: 16)),
                                           style: TextButton.styleFrom(
