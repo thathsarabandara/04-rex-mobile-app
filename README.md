@@ -1,154 +1,226 @@
-# 📱 REX-47 Mobile App
+# 📱 REX-47 Mobile Companion App (v1.0.0)
 
-> **Repository `04`** · The official Flutter companion app for the REX-47 autonomous platform, offering a premium glassmorphic single-column dashboard, low-latency teleoperation HUD, and comprehensive system telemetry.
+> **Repository `04`** · Premium, high-fidelity Flutter companion application for the REX-47 autonomous platform. Implements a purple-themed glassmorphic dashboard, dual-joystick teleoperation HUD with real-time video stream overlay, BLE local control switching via `flutter_blue_plus`, WebSockets for telemetry streams, and secure storage for JWT-validated tokens.
 
-[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue)]()
-[![Language](https://img.shields.io/badge/Language-Dart-0175C2?logo=dart)]()
-[![Framework](https://img.shields.io/badge/Framework-Flutter-02569B?logo=flutter)]()
-[![Styling](https://img.shields.io/badge/UI-Glassmorphism-FF69B4)]()
-[![Status](https://img.shields.io/badge/Status-Active%20Development-green)]()
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#-what-is-this-repository)
-- [Architecture](#-architecture)
-- [Features](#-features)
-- [Design Identity](#-design-identity)
-- [Getting Started](#-getting-started)
-- [Control Systems](#-control-systems)
-- [Dependencies](#-dependencies)
-- [Related Repositories](#-related-repositories)
+[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-blue.svg?style=flat-square&logo=apple)]()
+[![Language](https://img.shields.io/badge/Language-Dart-0175C2.svg?style=flat-square&logo=dart)]()
+[![Framework](https://img.shields.io/badge/Framework-Flutter-02569B.svg?style=flat-square&logo=flutter)]()
+[![Styling](https://img.shields.io/badge/UI-Glassmorphism%20%7C%20Purple%20Theme-8a2be2.svg?style=flat-square)]()
+[![State Management](https://img.shields.io/badge/State--Management-Riverpod-38bdf8.svg?style=flat-square)]()
+[![Build Tool](https://img.shields.io/badge/Build%20Tool-flutter%20cli-orange.svg?style=flat-square)]()
 
 ---
 
-## 🧭 What Is This Repository?
+## 🧭 System Architecture
 
-This is the **primary mobile interface** for controlling, monitoring, and configuring the REX-47 robotic platform on the go. Built with Flutter, it offers a deeply native, highly responsive experience across both iOS and Android.
+The mobile application utilizes a features-first Clean Architecture directory system, managing network connections, secure tokens, and local/remote telemetry operations.
 
-**Key Highlights:**
-- ✅ **Unified Single-Column Dashboard:** A high-fidelity, scrollable view replacing traditional tabbed navigation for a more immediate overview of robot health.
-- ✅ **Teleoperation HUD:** A dedicated, landscape-only control interface featuring a live MJPEG stream and dual-joystick mobility.
-- ✅ **Hybrid Connectivity:** Seamlessly switches between local BLE (Bluetooth Low Energy) for direct control and Internet via API Gateway for remote monitoring.
-- ✅ **Rich Notifications:** Detailed event streams alerting the user to obstacle detection, battery warnings, and AI interactions.
+```mermaid
+graph TD
+    subgraph flutter_app ["Flutter Application Layout (lib/)"]
+        subgraph presentation ["Presentation & Views"]
+            Dash[Dashboard Screen]
+            HUD[Teleoperation HUD & Joysticks]
+            Vision[Vision AI / WebRTC Stream Viewer]
+            Autom[Automations Grid]
+            Auth[Auth / OTP / Onboarding Screens]
+        end
+
+        subgraph business_logic ["State Management (Riverpod Providers)"]
+            AuthProv[Auth & Secure Token Provider]
+            ControlProv[Locomotion & Joint Movement State]
+            TelemetryProv[WebSocket Sensor Stream State]
+            BLEProv[Bluetooth Scan & Command State]
+        end
+
+        subgraph core_network ["Core Networking & Services"]
+            HTTP[HTTP Client Wrapper]
+            WS[WebSocket Client Channel]
+            RTC[WebRTC Client Stream Handler]
+            BLE[FlutterBluePlus Bluetooth Manager]
+            Secure[Flutter Secure Storage]
+        end
+    end
+
+    %% Device Hardware & Servers
+    BLE -.->|BLE Command Packets| ESP32[ESP32 Robot Firmware Port 0x02]
+    WS -.->|Telemetry JSON Streams| Gateway[API Gateway WebSockets]
+    RTC -.->|WebRTC Live Stream| StreamSrv[Vision AI Server]
+    HTTP -.->|REST API Calls| Gateway
+
+    %% Internal Flows
+    Auth --> AuthProv
+    Dash --> TelemetryProv
+    HUD --> ControlProv
+    Vision --> TelemetryProv
+    Autom --> TelemetryProv
+
+    AuthProv --> HTTP
+    AuthProv --> Secure
+    ControlProv --> BLE
+    ControlProv --> HTTP
+    TelemetryProv --> WS
+    TelemetryProv --> RTC
+```
 
 ---
 
-## 🏗️ Architecture
-
-### Directory Structure
+## 📦 Project Structure
 
 ```
 04-rex-mobile-app/
-├── android/                  ← Native Android build files
-├── ios/                      ← Native iOS build files
+├── android/                  # Native Android build configurations
+├── ios/                      # Native iOS build configurations
+├── assets/                   # Fonts, vector graphics, and onboard animations
 ├── lib/
-│   ├── core/                 ← Constants, themes, routes, and utilities
-│   ├── data/                 ← Models, repositories, and API clients
-│   ├── features/
-│   │   ├── auth/             ← Login, Onboarding, OTP Screens
-│   │   ├── dashboard/        ← Main scrolling dashboard and widgets
-│   │   ├── teleop/           ← Full-screen landscape HUD and joystick logic
-│   │   └── settings/         ← App configuration and profile management
-│   ├── shared/               ← Reusable GlassCards, Custom Buttons, Loaders
-│   └── main.dart             ← Application entry point
-├── assets/                   ← Fonts, animations, and image assets
-├── pubspec.yaml              ← Dependencies and configuration
-└── README.md                 ← This documentation
+│   ├── core/                 # Shared central architecture modules
+│   │   ├── network/          # API helpers, WebSocket drivers, and WebRTC configs
+│   │   ├── providers/        # Riverpod global application state managers
+│   │   ├── router/           # GoRouter client-side routing definitions & guards
+│   │   ├── theme/            # Accent layouts, dark/light setups, and typographies
+│   │   └── utils/            # Validators, formats, and hardware permission managers
+│   ├── features/             # Feature-specific implementations
+│   │   ├── onboarding/       # Startup tutorials & system sweeps
+│   │   ├── auth/             # Account credentials, OTP, and registration panels
+│   │   ├── connection/       # BLE scans, WebSocket setups, and broker configs
+│   │   ├── control/          # Virtual joysticks, joint sliders, and speeds
+│   │   ├── dashboard/        # Unified status metrics widgets grid
+│   │   ├── vision/           # WebRTC camera feeds and object annotation overlays
+│   │   ├── automation/       # Smart home automation rules and calendars
+│   │   ├── events/           # Live warning, info, and crash logging alerts
+│   │   ├── assistant/        # Chat interface, wake-word, and vocal feedback
+│   │   ├── media/            # Teleop snapshots & stream recordings library
+│   │   ├── analytics/        # Power metrics & hardware load graphing dashboards
+│   │   ├── profile/          # Profiles settings & security token views
+│   │   ├── config/           # App runtime parameters configuration
+│   │   ├── robots/           # Managed lists of paired and network robots
+│   │   └── notifications/    # Local pushes and push notification handlers
+│   ├── shared/               # Reusable glassmorphic layouts & custom buttons
+│   ├── widgets/              # Global UI helpers
+│   └── main.dart             # App startup mounter
+├── packages/
+│   └── lucide_icons/         # Dedicated internal vector icon set package
+├── pubspec.yaml              # App dependencies list & asset register
+└── README.md                 # This file
 ```
 
 ---
 
-## 🎨 Features
+## 📡 Connectivity & Hybrid Protocols
 
-### 🚀 **Onboarding & Authentication**
+To guarantee real-time response times and stable remote operations, the mobile client implements a hybrid communication framework:
 
-| Module | Description |
-|--------|-------------|
-| **Splash & Welcome** | A premium entry flow featuring the signature purple REX-47 branding. |
-| **Onboarding Types** | Six distinct onboarding screens detailing the platform's capabilities (AI, Telemetry, Autonomy, etc.). |
-| **Auth Flow** | Secure Login, Registration, and OTP recovery, perfectly aligned with the Glassmorphic design system. |
+### 1. Bluetooth Low Energy (BLE)
+For close-proximity, low-latency teleoperations (bypassing cloud routers), the app communicates directly with the robot's ESP32 microcontroller using `flutter_blue_plus`:
+* **Broadcast Target ID**: `REX_47_BLE`
+* **Service UUID**: `4fafc201-1fb5-459e-8fcc-c5c9c331914b`
+* **Characteristic UUID**: `beb5483e-36e1-4688-b7f5-ea07361b26a8`
+* **Local Control Commands**:
+  * Locomotion drive: `M:<x>:<y>` or `M:<direction>:<speed>`
+  * Pan-tilt camera sweep: `J:<servo_index>:<angle>` (e.g. `J:0:90`)
+  * Joint coordinates target: `A:<pan_angle>:<tilt_angle>` (e.g. `A:90.0:120.0`)
+  * Emergency Stop: `ESTOP`
 
-### 📊 **Unified Dashboard**
+### 2. HTTP REST Client
+Used for configuration settings, user sign-ups, and managing paired robot registers via the HTTP API Gateway:
+* Uses a standardized HTTP wrapper carrying bearer tokens parsed from secure local memory.
 
-| Component | Description |
-|-----------|-------------|
-| **Status Metrics Grid** | Essential cards detailing Compute load, Sensor health, Connectivity strength, and Battery. |
-| **Quick Actions** | A grid of instantly accessible commands (e.g., Return to Base, Enter Patrol Mode, Calibrate). |
-| **Event Notifications** | A live feed of system events with descriptive subtitles and severity indicators. |
+### 3. Persistent WebSockets
+Establishes a persistent socket connection to stream real-time sensor metrics:
+* Ingests JSON packages updating battery voltages, compute temperatures, ultrasonic distance metrics, and IR line sensors.
 
-### 🎮 **Robot Teleoperation HUD**
-
-| Feature | Description |
-|---------|-------------|
-| **Live Video Feed** | Low-latency MJPEG streaming from the robot's main camera serving as the background. |
-| **Transparent Controls** | Glassmorphic dual-joystick overlays for multi-directional driving and camera panning. |
-| **Precision Sliders** | Fine-tuned joint manipulation inputs for delicate operations. |
-| **Safety Overrides** | Immediate E-Stop functionality prioritizing user safety. |
-
----
-
-## 💜 Design Identity
-
-The REX-47 mobile app prioritizes a **premium, "wow-factor" aesthetic**:
-- **Purple-Themed Visual Identity:** A consistent, branded color palette providing a modern, professional look.
-- **Glassmorphism:** Widespread use of `BackdropFilter` to create blurred, translucent cards over complex, gradient-rich backgrounds.
-- **Minimalistic White Theme:** Status metrics utilize a refined white-card design with subtle color accents to ensure legibility while maintaining the premium feel.
+### 4. Low-Latency WebRTC Stream
+Establishes connection endpoints via `flutter_webrtc` to overlay real-time video frames from the robot's camera with custom bounding box annotations (e.g. human face recognition, object boundary shapes).
 
 ---
 
-## 🚀 Getting Started
+## 🎨 Design Identity (Aesthetics & UX)
+
+The visual design is optimized for high-end aesthetics, premium interactions, and screen legibility:
+* **Glassmorphic UI**: Translucent, blurred card structures generated using native `BackdropFilter` widgets layered over rich background gradients.
+* **Branded Themes**: Dark-mode visual configurations highlighted with purple accent colors.
+* **Modern Typography**: Smooth text interfaces rendered using Google Fonts (`Inter` and `Outfit`).
+* **Fluid Micro-Animations**: Page transitions, tab switching, and button hover states animated using custom animation curves.
+
+---
+
+## 🛠️ Compilation & Getting Started
 
 ### Prerequisites
+* **Flutter SDK**: `^3.11.5`
+* **Dart SDK**: compatible version
+* **IDE**: Android Studio / VS Code / Xcode (for iOS)
+* **Cocoapods**: Required for iOS dependency compiling
 
-- **Flutter SDK:** ≥ 3.10.x
-- **Dart:** ≥ 3.0.x
-- Android Studio or Xcode (for emulation/deployment)
+### Development Steps
 
-### Installation
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/thathsarabandara/04-rex-mobile-app.git
+   cd 04-rex-mobile-app
+   ```
 
+2. **Pull dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Verify Connected Emulators or Hardware**
+   ```bash
+   flutter devices
+   ```
+
+4. **Launch Local Debugger**
+   ```bash
+   flutter run
+   ```
+
+### Building Release Files
+Generate compilation bundles for distribution:
 ```bash
-# 1. Clone the repository
-git clone https://github.com/thathsarabandara/04-rex-mobile-app.git
-cd 04-rex-mobile-app
+# Build Android APK file
+flutter build apk --release
 
-# 2. Fetch dependencies
-flutter pub get
-
-# 3. Run the application
-flutter run
+# Build iOS App Bundle
+flutter build ipa --release
 ```
 
 ---
 
-## 📡 Control Systems
+## 📦 Core Dependencies
 
-The mobile app employs a **hybrid architecture** to ensure robust control:
-1. **API Gateway (Internet):** Used for long-distance monitoring, telemetry streaming, and high-level autonomous commands. Relies on JWT authentication.
-2. **Bluetooth Low Energy (BLE):** Used for ultra-low latency teleoperation when in physical proximity to the robot. Bypasses the cloud to communicate directly with the ESP32 hardware via the `02-rex-firmware` GATT server.
+The application relies on these main plugins defined in [pubspec.yaml](pubspec.yaml):
 
----
-
-## 📦 Dependencies
-
-### Core Plugins
-- `flutter_bloc` / `provider` — State management
-- `dio` — Robust HTTP client for API interactions
-- `flutter_blue_plus` — BLE communication stack
-- `web_socket_channel` — Real-time telemetry ingestion
-- `shared_preferences` — Local storage caching
-
-### UI & Styling
-- `glassmorphism` — Premium UI effects
-- `flutter_svg` — Vector asset rendering
-- `google_fonts` — Modern typography integration
+| Package | Purpose | Category |
+|---|---|---|
+| `flutter_riverpod` | State management and dependency injection | State |
+| `go_router` | Declarative, screen-split client routing | Routing |
+| `flutter_blue_plus` | Bluetooth Low Energy scanning and command transmission | Hardware |
+| `web_socket_channel` | Telemetry channel handlers | Networking |
+| `flutter_webrtc` | Low-latency WebRTC streams overlay renderers | Video |
+| `flutter_secure_storage` | Storing user JWT access/refresh tokens in keychain/keystore | Security |
+| `google_fonts` | Typography configurations | UI |
 
 ---
 
-## 🔗 Related Repositories
+## 📈 Feature Roadmap
 
-- [01-rex-architecture](../01-rex-architecture) — REX-47 System Architecture
-- [03-rex-web-dashbaord](../03-rex-web-dashbaord) — REX-47 Web Dashboard
-- [05-rex-api-gateway](../05-rex-api-gateway) — REX-47 API Gateway
-- [06-rex-auth-service](../06-rex-auth-service) — REX-47 Auth Service
+| Feature Module | Description | Status |
+|:---:|---|:---:|
+| **Design** | Purple-themed glassmorphism interface configurations | ✅ Implemented |
+| **Tutorial** | Onboarding layouts explaining system capabilities | ✅ Implemented |
+| **Security** | JWT session authentication with Secure Storage | ✅ Implemented |
+| **BLE** | Bluetooth device scans & control commands | ✅ Implemented |
+| **Locomotion** | Virtual joystick driving & camera pan-tilt sliders | ✅ Implemented |
+| **Gauges** | Real-time voltage, current, and temperature trackers | ✅ Implemented |
+| **Automate** | Smart Home schedules and automation grid builders | ✅ Implemented |
+| **Video** | Live camera overlay with object markings | ✅ Implemented |
+| **WebSockets** | Telemetry ingestion and logging | ✅ Implemented |
+| **Audio** | Real-time voice assistant input and feedback | ⏳ Planned |
+| **SLAM** | SLAM mapping and path grid visualization | ⏳ Planned |
+
+---
+
+<div align="center">
+  <sub>Part of the <strong>REX-47</strong> Autonomous Robotic Platform Ecosystem</sub>
+</div>
